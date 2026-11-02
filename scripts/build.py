@@ -28,7 +28,7 @@ for source, target in [('build/pdf.min.mjs', 'pdf.mjs'), ('build/pdf.worker.min.
     shutil.copy2(pdfjs / source, vendor / target)
 for directory in ['cmaps', 'standard_fonts']:
     shutil.copytree(pdfjs / directory, vendor / directory, dirs_exist_ok=True)
-archive = root / 'dist' / 'vtop-command.zip'
+archive = root / 'dist' / f"vtop-command-{manifest['version']}.zip"
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:
     for name in files:
         bundle.write(output / name, f'vtop-command/{name}')
@@ -38,7 +38,9 @@ with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:
                 bundle.write(path, 'vtop-command/' + path.relative_to(output).as_posix())
 with zipfile.ZipFile(archive) as bundle:
     assert bundle.testzip() is None
-versioned_archive = root / 'dist' / f"vtop-command-{manifest['version']}.zip"
-shutil.copy2(archive, versioned_archive)
+# Keep only this release's generated ZIP, as requested.
+for obsolete in (root / 'dist').glob('vtop-command*.zip'):
+    if obsolete != archive and (obsolete.name == 'vtop-command.zip' or obsolete.name.startswith('vtop-command-')):
+        obsolete.unlink()
 print(f'Built {output}\nBuilt {archive}')
 print('VERDICT: PASS')
