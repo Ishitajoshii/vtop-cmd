@@ -8,11 +8,11 @@
   }
   function discover(doc) {
     for (const form of doc.querySelectorAll('form')) {
-      if (!form.querySelector('input[type="password"]')) continue;
+      if (!form.querySelector('input[type="password"],input#password,input[name="password"]')) continue;
       const input = [...form.querySelectorAll('input')].find(el =>
         /^(text|search|tel)$/i.test(el.type) && /captcha/i.test(`${el.id} ${el.name} ${el.placeholder}`) &&
         !/recaptcha/i.test(`${el.id} ${el.name}`) && !el.disabled && !el.hidden);
-      const image = [...form.querySelectorAll('img')].find(el => /captcha/i.test(`${el.id} ${el.getAttribute('src')} ${el.alt}`));
+      const image = form.querySelector('#captchaBlock img') || [...form.querySelectorAll('img')].find(el => /captcha/i.test(`${el.id} ${el.getAttribute('src')} ${el.alt}`));
       if (input && image) return { input, image };
     }
     return null;

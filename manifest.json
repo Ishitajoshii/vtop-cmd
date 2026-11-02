@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VTOP Command",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Jump to VTOP pages with Cmd+K, and give VTOP a comfortable dark mode.",
   "permissions": [
     "storage",

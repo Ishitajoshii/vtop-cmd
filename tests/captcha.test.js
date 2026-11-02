@@ -95,3 +95,11 @@ test('offscreen OCR uses packaged assets, disables image caching, compares two p
   assert.equal(options.workerBlobURL, false); assert.equal(options.cacheMethod, 'none');
   for (const path of [options.workerPath, options.corePath, options.langPath]) assert.ok(path.startsWith('chrome-extension://extension/'));
 });
+
+test('live VTOP login markup: unlabelled embedded image in captchaBlock and revealed password', () => {
+  const dom = new JSDOM('<form id="vtopLoginForm"><img id="logo" src="logo.png"><input id="username"><input id="password" name="password" type="text"><div id="captchaBlock"><img src="data:image/png;base64,AAAA"><button type="button">Refresh</button></div><input id="captchaStr" name="captchaStr" placeholder="Enter CAPTCHA shown above"></form>');
+  const pair = discover(dom.window.document);
+  assert.equal(pair.input.id, 'captchaStr');
+  assert.equal(pair.image.parentElement.id, 'captchaBlock');
+  dom.window.close();
+});
