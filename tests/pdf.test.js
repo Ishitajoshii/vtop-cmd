@@ -213,3 +213,40 @@ test('vtopDownload-style popups with a CSRF token open the viewer; HTML response
  const b=bridge({body:'<html>page</html>',type:'text/html'});b.w.open('examinations/getQuestionPaper/12?authorizedID=X&_csrf=test');await pause();
  assert.equal(b.opens.length,1);assert.ok(b.messages.some(m=>m.kind==='not-pdf'));b.dom.window.close();
 });
+test('Download stays visible during loading, request failure, blob-copy failure and viewer errors',async()=>{
+ const {dom,w,shadow,send}=previewWindow();
+ send('pdf-1-1','loading');const button=shadow.querySelector('.download');assert.equal(button.hidden,false);
+ const controls=[];w.addEventListener('message',event=>{if(event.data?.source==='vtop-command-pdf-control')controls.push(event.data);});
+ send('pdf-1-1','error');assert.equal(button.hidden,false);button.click();await pause();
+ assert.ok(controls.some(m=>m.kind==='download'&&m.id==='pdf-1-1'));
+ w.fetch=async()=>{throw Error('Blob unavailable');};send('pdf-1-1','ready',{blobUrl:'blob:https://vtop.vit.ac.in/missing'});await pause();
+ assert.equal(button.hidden,false);assert.match(shadow.querySelector('.status').textContent,/Use Download/);
+ w.fetch=async()=>({arrayBuffer:async()=>new TextEncoder().encode('%PDF-1.4').buffer});
+ send('pdf-1-1','ready',{blobUrl:'blob:https://vtop.vit.ac.in/valid'});await pause();
+ const frame=shadow.querySelector('iframe');const nonce=new URL(frame.src).hash.slice(1);
+ w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,origin:'chrome-extension://test-extension',data:{type:'viewer-error',nonce}}));
+ assert.equal(button.hidden,false);assert.equal(shadow.querySelector('dialog').open,true);dom.window.close();
+});
+test('explicit Download bypasses a failed GET preview and never starts another preview request',async()=>{
+ const t=bridge({ok:false});t.w.open('/vtop/download/broken');await pause();
+ const id=t.messages.find(m=>m.kind==='loading').id;
+ const send=(kind,origin=t.w.location.origin,requestId=id)=>t.w.dispatchEvent(new t.w.MessageEvent('message',{source:t.w,origin,data:{source:'vtop-command-pdf-control',kind,id:requestId}}));
+ send('download','https://attacker.example');send('download',t.w.location.origin,'pdf-stale');assert.equal(t.downloads.length,0);
+ send('download');assert.equal(t.downloads.length,1);assert.equal(t.downloads[0].href,'https://vtop.vit.ac.in/vtop/download/broken');assert.equal(t.calls.length,1);
+ send('release');send('download');assert.equal(t.downloads.length,1);t.dom.window.close();
+});
+test('explicit Download uses the retained PDF Blob without fetching it again',async()=>{
+ const t=bridge();t.w.open('/vtop/download/report');await pause();
+ const id=t.messages.find(m=>m.kind==='ready').id;
+ t.w.dispatchEvent(new t.w.MessageEvent('message',{source:t.w,origin:t.w.location.origin,data:{source:'vtop-command-pdf-control',kind:'download',id}}));
+ assert.equal(t.calls.length,1);assert.equal(t.downloads.length,1);assert.equal(t.downloads[0].name,'Lecture notes.pdf');assert.ok(t.downloads[0].href.startsWith('blob:'));t.dom.window.close();
+});
+test('POST preview failure never retries automatically; explicit Download submits original fields natively once',async()=>{
+ const t=bridge({ok:false});const form=t.w.document.createElement('form');form.method='post';form.action='/vtop/download/report';form.innerHTML='<input name="_csrf" value="mock-token"><input name="course" value="sample">';t.w.document.body.append(form);form.submit();await pause();
+ assert.equal(t.calls.length,1);assert.equal(t.calls[0].init.method,'POST');
+ const id=t.messages.find(m=>m.kind==='loading').id;const native=[];
+ // Capture originalSubmit's receiver through the native form prototype hook set up by bridge().
+ const observer=new t.w.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.tagName==='FORM')native.push(node);});observer.observe(t.w.document.documentElement,{childList:true});
+ t.w.dispatchEvent(new t.w.MessageEvent('message',{source:t.w,origin:t.w.location.origin,data:{source:'vtop-command-pdf-control',kind:'download',id}}));await pause();
+ assert.equal(t.calls.length,2);assert.equal(t.calls[1].native,true);assert.equal(native.length,1);assert.equal(native[0].querySelector('[name="_csrf"]').value,'mock-token');assert.equal(native[0].querySelector('[name="course"]').value,'sample');assert.equal(native[0].target,'_blank');observer.disconnect();t.dom.window.close();
+});

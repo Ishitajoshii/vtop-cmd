@@ -20,7 +20,7 @@
   };
   URL.revokeObjectURL = function (url) { pdfBlobs.delete(url); return revokeURL(url); };
   const nativeURLs = new Set();
-  let sequence = 0;
+  let sequence = 0, activeDownload = null;
   let bypassClick = false;
   let downloadIntent = null;
   const downloadHint = value => /\bpdf\b|download|dwnld|curriculdown/i.test(value || '');
@@ -55,9 +55,37 @@
     document.documentElement.append(anchor); originalClick.call(anchor); anchor.remove();
     setTimeout(() => { nativeURLs.delete(url); revokeURL(url); },60000);
   }
+  function originalDownload(url, init, name) {
+    const method=(init?.method || 'GET').toUpperCase();
+    nativeURLs.add(url);setTimeout(()=>nativeURLs.delete(url),10000);
+    if(method==='POST'){
+      // A fresh native request happens only after the user explicitly presses Download.
+      const form=document.createElement('form');form.method='POST';form.action=url;form.target='_blank';
+      form.enctype=init.body instanceof FormData?'multipart/form-data':'application/x-www-form-urlencoded';
+      for(const [key,value] of init.body || []){
+        if(typeof value!=='string')throw new Error('Original download is unavailable. Retry its link.');
+        const input=document.createElement('input');input.type='hidden';input.name=key;input.value=value;form.append(input);
+      }
+      document.documentElement.append(form);
+      try{originalSubmit.call(form);}finally{form.remove();}
+    }else{
+      const anchor=document.createElement('a');anchor.href=url;anchor.download=name||'document.pdf';anchor.target='_blank';
+      anchor.dataset.vtopPdfBypass='true';document.documentElement.append(anchor);
+      try{originalClick.call(anchor);}finally{anchor.remove();}
+    }
+  }
+  window.addEventListener('message',event=>{
+    const message=event.data;
+    if(event.source!==window||event.origin!==location.origin||message?.source!=='vtop-command-pdf-control'||message.id!==activeDownload?.id)return;
+    if(message.kind==='release'){activeDownload=null;return;}
+    if(message.kind==='download'){
+      try{activeDownload.save();}catch{emit('download-error',message.id);}
+    }
+  });
   async function preview(url, init, suggestedName, fallback, source) {
     downloadIntent=null;
     const id = `pdf-${Date.now()}-${++sequence}`;
+    activeDownload={id,save:()=>source?download(source,suggestedName||'document.pdf'):originalDownload(url,init,suggestedName)};
     emit('loading',id);
     try {
       const response = source ? null : await nativeFetch(url,{credentials:'same-origin',...init});
@@ -71,6 +99,7 @@
         if (/text\/html|application\/json/i.test(blob.type)) throw new Error('VTOP returned a page instead of a document. Sign in again and retry.');
         download(blob,name); emit('not-pdf',id); return;
       }
+      if(activeDownload?.id===id)activeDownload.save=()=>download(blob,name);
       const blobUrl = createURL(new Blob([blob],{type:'application/pdf'}));
       emit('ready',id,{blobUrl,filename:name});
       setTimeout(() => revokeURL(blobUrl),60000);
@@ -136,8 +165,8 @@
     return true;
   }
   // Catch-all for location.href/assign, native form submissions and downloads the hooks above cannot see.
-  // Strictly read-only: a POST is only taken over for an explicit download endpoint and is never replayed,
-  // so VTOP never receives a request twice; only GET navigations fall back to the native page.
+  // Read-only POST downloads are never replayed automatically. A native POST retry requires the user
+  // to press Download explicitly; only GET navigations fall back to the native page automatically.
   window.navigation?.addEventListener?.('navigate',event => {
     if (bypassClick || !event.cancelable || event.hashChange || ['reload','traverse'].includes(event.navigationType)) return;
     const url = event.destination?.url;

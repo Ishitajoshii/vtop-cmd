@@ -45,14 +45,16 @@
     frame.src=`${viewerURL}?theme=${dark?'dark':'light'}#${nonce}`;dialog.append(frame);
     watchdog=setTimeout(()=>{status.textContent='The viewer did not respond. Use Download to save the PDF, or retry the link.';},15000);
   }
+  function control(kind,id=activeId){if(id)window.postMessage({source:'vtop-command-pdf-control',kind,id},location.origin);}
+  download.addEventListener('click',event=>{event.preventDefault();control('download');});
   function close(){if(dialog.open)dialog.close();}
   shadow.querySelector('.close').addEventListener('click',close);
   // A click on the backdrop (outside the dialog box) closes it, like the command menu.
   dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)close();});
-  dialog.addEventListener('close',()=>{activeId=null;release();if(previousFocus?.isConnected)previousFocus.focus();});
+  dialog.addEventListener('close',()=>{control('release');activeId=null;release();if(previousFocus?.isConnected)previousFocus.focus();});
   function show(id){
     if(!dialog.open){previousFocus=document.activeElement;dialog.showModal();}
-    activeId=id;release();shadow.querySelector('h2').textContent='PDF preview';status.textContent='Loading PDF…';
+    activeId=id;release();download.hidden=false;download.href='#';download.removeAttribute('download');shadow.querySelector('h2').textContent='PDF preview';status.textContent='Loading PDF…';
   }
   window.addEventListener('message',async event=>{
     if(frame && event.source===frame.contentWindow){
@@ -73,7 +75,8 @@
     if(message.kind==='loading'){show(message.id);return;}
     if(message.id!==activeId)return;
     if(message.kind==='not-pdf'){close();return;}
-    if(message.kind==='error'){status.textContent='Unable to preview this document. Sign in again if needed, or Shift-click its original download link.';return;}
+    if(message.kind==='error'){status.textContent='Unable to preview this document. Use Download to try the original file; sign in again if needed.';return;}
+    if(message.kind==='download-error'){status.textContent='The original download is unavailable. Retry its link or sign in again.';return;}
     if(message.kind!=='ready' || typeof message.blobUrl!=='string' || !message.blobUrl.startsWith(`blob:${location.origin}/`))return;
     const id=message.id;
     try{
@@ -85,7 +88,7 @@
       download.href=blobURL;download.download=filename;download.hidden=false;
       shadow.querySelector('h2').textContent=filename;
       status.textContent='';mount();
-    }catch{if(id===activeId)status.textContent='Unable to open this PDF. Retry the link, or Shift-click it to use the original download.';}
+    }catch{if(id===activeId)status.textContent='Unable to open this PDF. Use Download to save the original file, or retry its link.';}
   });
   // Shortcut stays usable without placing the command menu behind an open preview.
   document.addEventListener('keydown',event=>{if(dialog.open&&shortcut.matches(event))close();},true);

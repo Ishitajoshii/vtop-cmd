@@ -126,7 +126,7 @@ VTOP's PDF downloads, such as course materials and the curriculum, open in a bui
 
 - **Reading:** scroll through all pages, or type a page number to jump to it.
 - **Zoom:** use ⌘/Ctrl + scroll, a trackpad pinch, ⌘/Ctrl + `+`/`−`, or the toolbar. ⌘/Ctrl + `0` or **Fit width** resets it.
-- **Download** saves the original file whenever you want it.
+- **Download** stays visible while loading and if previewing fails. It saves retained original bytes when available, or retries the original download natively when you click it.
 - **Closing:** **Esc**, **Close** or a click outside closes the viewer.
 - **Password-protected PDFs** ask for the password inside the viewer.
 - **Bypass:** Shift-click a link to download it the normal way. Files that aren't PDFs download as usual.
@@ -162,7 +162,7 @@ Only VIT decides how it treats browser extensions, so no one can honestly promis
 | The semester picker has no semester list yet | One Time Table request, as sent by VTOP's menu | At most once per page load, and the list is reused for a day |
 | **Pending** column on Digital Assignment Upload | Each course's dashboard request, as sent by VTOP's Dashboard button | One course at a time, never in parallel. Each result is reused for a random 1–5 hours. It stops as soon as you open a dashboard yourself. |
 | A preset is auto-filled, or you change a School, Venue Type, Block or Work field in the preset editor | VTOP's own lookup for that dropdown | Once per change, one at a time; never a submit |
-| You open a PDF | The same download request your browser was about to send | Once; never repeated |
+| You open a PDF | The same download request your browser was about to send | Once automatically; an explicit Download click can retry it if loading failed |
 
 **After you submit an assignment:** picking a file, submitting, or clicking Upload on a course dashboard clears that course's cached deadlines. If the course can't be identified, all of them are cleared. The Pending column then fetches fresh data next time, so it never shows work you've already handed in as pending.
 
