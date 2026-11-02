@@ -1,19 +1,17 @@
 {
   "name": "vtop-command-menu",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "private": true,
   "description": "A local, DOM-driven command menu for VTOP",
   "scripts": {
     "test": "node --test",
-    "check": "node --check dark-readability.js && node --check brand.js && node --check combobox.js && node --check cgpa.js && node --check cgpa-ui.js && node --check content.js && node --check navigation.js && node --check semesters.js && node --check enhancements.js && node --check pdf-bridge.js && node --check pdf-preview.js && node --check pdf-viewer.mjs && node --check page-enhancements.js && node --check page-actions.js && node --check page-runtime.js && node --check extension-action.js && node --check form-presets.js && node --check search-select.js && node --check captcha.js && node --check captcha-background.js && node --check captcha-offscreen.js",
+    "check": "node --check dark-readability.js && node --check brand.js && node --check combobox.js && node --check cgpa.js && node --check cgpa-ui.js && node --check content.js && node --check navigation.js && node --check semesters.js && node --check enhancements.js && node --check pdf-bridge.js && node --check pdf-preview.js && node --check pdf-viewer.mjs && node --check page-enhancements.js && node --check page-actions.js && node --check page-runtime.js && node --check extension-action.js && node --check form-presets.js && node --check search-select.js && node --check captcha.js && node --check captcha-solver.js",
     "build": "python3 scripts/build.py"
   },
   "devDependencies": {
     "jsdom": "^30.1.3"
   },
   "dependencies": {
-    "@tesseract.js-data/eng": "1.0.0",
-    "pdfjs-dist": "^6.5.438",
-    "tesseract.js": "7.0.0"
+    "pdfjs-dist": "^6.5.438"
   }
 }

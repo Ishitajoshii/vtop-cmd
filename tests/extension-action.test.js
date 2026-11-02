@@ -7,7 +7,7 @@ function setup(sendMessage){
  const chrome={action:{onClicked:{addListener:callback=>{listener=callback;}}},tabs:{sendMessage,create:async tab=>opened.push(tab)},
   storage:{session:{setAccessLevel:async options=>access.push(options.accessLevel)}},
   runtime:{onStartup:{addListener:callback=>lifecycle.push(['startup',callback])},onInstalled:{addListener:callback=>lifecycle.push(['installed',callback])}}};
- vm.runInNewContext(fs.readFileSync(__dirname+'/../extension-action.js','utf8'),{chrome,importScripts:()=>{}});
+ vm.runInNewContext(fs.readFileSync(__dirname+'/../extension-action.js','utf8'),{chrome});
  return{click:tab=>listener(tab),opened,access,lifecycle};
 }
 test('toolbar logo opens the existing VTOP command menu',async()=>{

@@ -1,4 +1,3 @@
-importScripts('captcha-background.js');
 // Let content scripts keep short-lived page data (assignment deadlines) in memory-only session storage.
 const shareSession = () => chrome.storage.session.setAccessLevel?.({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' })?.catch(() => {});
 shareSession();

@@ -205,7 +205,7 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 
 | File | Purpose |
 | --- | --- |
-| `manifest.json` | Manifest V3: VTOP-only content scripts, storage and local OCR offscreen permissions |
+| `manifest.json` | Manifest V3: VTOP-only content scripts and storage permission |
 | `brand.js` | Shared logo, colours and platform shortcut |
 | `combobox.js` | Searchable dropdown used in the extension's own windows |
 | `search-select.js` | Type-to-search for Late Hour and Leave Request dropdowns |
@@ -222,10 +222,12 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 | `extension-action.js` | Toolbar button and session-storage access |
 
 
-### Image CAPTCHA prefill (experimental)
+### Image CAPTCHA prefill
 
-The login form gets a local prefill toggle, enabled by default. OCR starts only for a visible image CAPTCHA in a password form; Google reCAPTCHA is left for you to complete. Two processed versions must agree with at least 90% engine confidence before the field is filled. Always check the result before signing in. The extension never submits login, refreshes challenges automatically, or changes which challenge VTOP offers.
+Image CAPTCHA recognition runs locally using a small classifier trained for VTOP's six colored characters. It loads its bundled model only when a visible image CAPTCHA appears. Google reCAPTCHA remains manual. Prefilling preserves manual edits, discards stale results when images refresh, and never submits login or changes which challenge VTOP offers. Check the suggested answer before signing in. An unsupported image, ambiguous model result or loading error leaves the field manual.
 
-The English integer model and portable LSTM engine are bundled for offline recognition. No external OCR service, runtime CDN, or model download is used. Only the toggle is saved; image pixels and recognized text remain in memory. This adds the `offscreen` permission, a WebAssembly allowance, and a Chrome/Brave 116 minimum. OCR workers terminate after each attempt and the offscreen document closes after inactivity. The image is copied from the displayed element, never requested again from VTOP. An unreadable or canvas-protected image falls back to manual entry.
+This replaces the experimental Tesseract engine: no OCR WebAssembly, language pack, offscreen document, extra permission or model download is needed. The model is packaged with the extension, and images and results remain in memory. Only the prefill toggle is saved locally.
 
-Live Brave inspection confirmed VTOP uses an unlabelled embedded image in `#captchaBlock`, and the revealed password field can have type `text`; detection covers both. One displayed image was tested locally with the bundled OCR engine using grayscale and thresholded preprocessing: both passes reported zero confidence and disagreed, so no autofill would occur. This is an experimental fallback, not reliable VTOP CAPTCHA recognition. The full browser/offscreen pipeline remains unverified. CAPTCHA images and answers were not added to the repository.
+The model and fixed-position saturation preprocessing are adapted from [levyashvin/VTOP-Captcha-Solver](https://github.com/levyashvin/VTOP-Captcha-Solver/tree/b245a4b5d9ead1ffcc1fd6bafc98ef59815050bc), copyright © 2025 Yuva Yashvin, under the [MIT license](licenses/vtop-captcha-solver.txt). The upstream project credits ViBoot and VITrendz for the original logic/training data. Model provenance is included in `captcha-model.json`. Extension lifecycle, manual-edit protection and uncertainty checks are local adaptations; upstream code is never downloaded or executed at runtime.
+
+The new classifier correctly recognized the previously failing VTOP image in a local test. One successful sample does not establish an overall accuracy rate. No CAPTCHA samples or answers are included in the repository. Login submission and server acceptance were not tested.

@@ -1,10 +1,13 @@
 (() => {
   'use strict';
-  const normalize = text => String(text || '').replace(/\s/g, '');
-  function consensus(a, b, max = 10) {
-    const text = normalize(a?.text);
-    return text === normalize(b?.text) && /^[a-zA-Z0-9]{4,10}$/.test(text) && text.length <= max &&
-      a.confidence >= 90 && b.confidence >= 90 ? text : '';
+  function accept(result, max = 10) {
+    if (!result || !/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(result.text) || max < 6 ||
+        !Array.isArray(result.scores) || result.scores.length !== 6 ||
+        !Array.isArray(result.margins) || result.margins.length !== 6 ||
+        !result.scores.every(value => Number.isFinite(value) && value >= .5 && value <= 1) ||
+        !result.margins.every(value => Number.isFinite(value) && value >= .15 && value <= 1) ||
+        !Number.isFinite(result.meanScore) || result.meanScore < .8) return '';
+    return result.text;
   }
   function discover(doc) {
     for (const form of doc.querySelectorAll('form')) {
@@ -17,7 +20,7 @@
     }
     return null;
   }
-  if (typeof module === 'object' && module.exports) { module.exports = { normalize, consensus, discover }; return; }
+  if (typeof module === 'object' && module.exports) { module.exports = { accept, discover }; return; }
   if (globalThis.__vtopCaptcha) return;
   globalThis.__vtopCaptcha = true;
   let enabled = true, ready = false, current = null, sequence = 0, timer;
@@ -73,13 +76,14 @@
       // Copy the displayed pixels. Never re-fetch a challenge: its endpoint may rotate the server-side answer.
       const width = pair.image.naturalWidth, height = pair.image.naturalHeight;
       if (width * height > 1000000) throw Error('Image too large');
-      const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-      canvas.getContext('2d').drawImage(pair.image, 0, 0);
-      const image = canvas.toDataURL('image/png');
-      const response = await chrome.runtime.sendMessage({ type: 'vtop-captcha-recognize', image });
+      if (Math.abs(width / height - 5) > .05) throw Error('Unsupported CAPTCHA format');
+      const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 40;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      context.drawImage(pair.image, 0, 0, 200, 40);
+      const response = await VtopCaptchaSolver.read(context.getImageData(0, 0, 200, 40).data);
       if (generation !== sequence || current !== state || !pair.input.isConnected || !pair.image.isConnected ||
           state.edited || pair.input.value || !enabled) return;
-      const text = response?.ok && consensus(response.first, response.second, pair.input.maxLength > 0 ? pair.input.maxLength : 10);
+      const text = accept(response, pair.input.maxLength > 0 ? pair.input.maxLength : 10);
       if (!text) { status(state, 'Could not read confidently. Please type the CAPTCHA.'); return; }
       state.owned = text; state.writing = true;
       try {
@@ -87,7 +91,7 @@
         pair.input.dispatchEvent(new Event('input', { bubbles: true }));
         pair.input.dispatchEvent(new Event('change', { bubbles: true }));
       } finally { state.writing = false; }
-      status(state, 'Prefilled — check the image before signing in.');
+      status(state, 'Suggested — check the image before signing in.');
     } catch { if (generation === sequence) status(state, 'Prefill unavailable. Please type the CAPTCHA.'); }
   }
   chrome.storage.local.get({ captchaAutofill: true }).then(value => { enabled = value.captchaAutofill !== false; ready = true; schedule(); }).catch(() => { ready = true; schedule(); });
