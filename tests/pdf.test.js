@@ -49,7 +49,7 @@ test('expired sessions show an error instead of downloading HTML as PDF',async()
 test('PDF resources are bundled locally and MAIN interception is scoped only to VTOP',()=>{
  const manifest=JSON.parse(fs.readFileSync(__dirname+'/../manifest.json'));
  const main=manifest.content_scripts.find(script=>script.world==='MAIN');assert.deepEqual(main.matches,['https://vtop.vit.ac.in/vtop/*']);assert.equal(main.run_at,'document_start');
- assert.deepEqual(manifest.permissions,['storage']);
+ assert.deepEqual(manifest.permissions,['storage','offscreen']);
  for(const file of ['pdf-viewer.html','pdf-viewer.mjs','pdf-viewer.css'])assert.ok(fs.existsSync(__dirname+'/../'+file));
  assert.ok(!fs.readFileSync(__dirname+'/../pdf-viewer.html','utf8').includes('https://'));
 });

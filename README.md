@@ -205,7 +205,7 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 
 | File | Purpose |
 | --- | --- |
-| `manifest.json` | Manifest V3: VTOP-only content scripts and storage permission |
+| `manifest.json` | Manifest V3: VTOP-only content scripts, storage and local OCR offscreen permissions |
 | `brand.js` | Shared logo, colours and platform shortcut |
 | `combobox.js` | Searchable dropdown used in the extension's own windows |
 | `search-select.js` | Type-to-search for Late Hour and Leave Request dropdowns |
@@ -220,3 +220,12 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 | `page-runtime.js`, `page-actions.js` | Waits for VTOP to be idle and runs automatic actions one at a time |
 | `pdf-bridge.js`, `pdf-preview.js`, `pdf-viewer.*` | PDF download interception, preview window and PDF.js viewer |
 | `extension-action.js` | Toolbar button and session-storage access |
+
+
+### Image CAPTCHA prefill (experimental)
+
+The login form gets a local prefill toggle, enabled by default. OCR starts only for a visible image CAPTCHA in a password form; Google reCAPTCHA is left for you to complete. Two processed versions must agree with at least 90% engine confidence before the field is filled. Always check the result before signing in. The extension never submits login, refreshes challenges automatically, or changes which challenge VTOP offers.
+
+The English integer model and portable LSTM engine are bundled for offline recognition. No external OCR service, runtime CDN, or model download is used. Only the toggle is saved; image pixels and recognized text remain in memory. This adds the `offscreen` permission, a WebAssembly allowance, and a Chrome/Brave 116 minimum. OCR workers terminate after each attempt and the offscreen document closes after inactivity. The image is copied from the displayed element, never requested again from VTOP. An unreadable or canvas-protected image falls back to manual entry.
+
+Actual VTOP login image markup and recognition accuracy have not been verified: the browser capture was blank and a public HTTP inspection returned 403. Automated tests use synthetic login markup. Do not interpret OCR confidence as a measured success rate on VTOP.

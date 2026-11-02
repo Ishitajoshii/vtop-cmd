@@ -71,9 +71,9 @@ test('empty results, signed-out state, and theme restore/toggle without persisti
   query('zzzzzz'); assert.match(shadow.querySelector('.results').textContent,/No pages found/); key('Enter',{},shadow.querySelector('.search input'));
   dom.window.close();
 });
-test('manifest has only local preference storage and VTOP-only content scope, all shipped files exist',()=>{
+test('manifest has storage and offscreen permissions with VTOP-only content scope, all shipped files exist',()=>{
   const manifest=JSON.parse(fs.readFileSync(__dirname+'/../manifest.json'));
-  assert.equal(manifest.manifest_version,3); assert.deepEqual(manifest.permissions,['storage']);
+  assert.equal(manifest.manifest_version,3); assert.deepEqual(manifest.permissions,['storage','offscreen']);
   assert.deepEqual(manifest.content_scripts[0].matches,['https://vtop.vit.ac.in/vtop/*']);
   for(const file of [...manifest.content_scripts[0].js,...manifest.content_scripts[0].css]) assert.ok(fs.existsSync(__dirname+'/../'+file));
 });

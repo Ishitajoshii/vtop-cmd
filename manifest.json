@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "VTOP Command",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Jump to VTOP pages with Cmd+K, and give VTOP a comfortable dark mode.",
   "permissions": [
-    "storage"
+    "storage",
+    "offscreen"
   ],
   "content_scripts": [
     {
@@ -25,7 +26,8 @@
         "dark-readability.js",
         "cgpa-ui.js",
         "page-enhancements.js",
-        "pdf-preview.js"
+        "pdf-preview.js",
+        "captcha.js"
       ],
       "css": [
         "dark.css"
@@ -71,5 +73,9 @@
   },
   "background": {
     "service_worker": "extension-action.js"
+  },
+  "minimum_chrome_version": "116",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   }
 }
