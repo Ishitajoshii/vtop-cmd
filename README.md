@@ -224,9 +224,9 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 
 ### Image CAPTCHA prefill
 
-Image CAPTCHA recognition runs locally using a small classifier trained for VTOP's six colored characters. It loads its bundled model only when a visible image CAPTCHA appears. Google reCAPTCHA remains manual. Prefilling preserves manual edits, discards stale results when images refresh, and never submits login or changes which challenge VTOP offers. Check the suggested answer before signing in. An unsupported image, ambiguous model result or loading error leaves the field manual.
+Image CAPTCHA recognition runs locally using a small classifier trained for VTOP's six colored characters. It loads its bundled model only when a visible image CAPTCHA appears. Google reCAPTCHA remains manual. Autofill runs quietly without adding a checkbox or status message to the login form. Prefilling preserves manual edits, discards stale results when images refresh, and never submits login or changes which challenge VTOP offers. Check the suggested answer before signing in. An unsupported image, ambiguous model result or loading error leaves the field manual.
 
-This replaces the experimental Tesseract engine: no OCR WebAssembly, language pack, offscreen document, extra permission or model download is needed. The model is packaged with the extension, and images and results remain in memory. Only the prefill toggle is saved locally.
+This replaces the experimental Tesseract engine: no OCR WebAssembly, language pack, offscreen document, extra permission or model download is needed. The model is packaged with the extension, and images and results remain in memory.
 
 The model and fixed-position saturation preprocessing are adapted from [levyashvin/VTOP-Captcha-Solver](https://github.com/levyashvin/VTOP-Captcha-Solver/tree/b245a4b5d9ead1ffcc1fd6bafc98ef59815050bc), copyright © 2025 Yuva Yashvin, under the [MIT license](licenses/vtop-captcha-solver.txt). The upstream project credits ViBoot and VITrendz for the original logic/training data. Model provenance is included in `captcha-model.json`. Extension lifecycle, manual-edit protection and uncertainty checks are local adaptations; upstream code is never downloaded or executed at runtime.
 

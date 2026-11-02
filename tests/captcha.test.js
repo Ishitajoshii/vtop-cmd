@@ -44,6 +44,7 @@ function setup({ enabled = true, response = async () => answer, initial = '' } =
 test('prefill dispatches input/change once without submitting, and handles a new same-URL image', async () => {
   const t = setup(); let changes = 0; t.input.addEventListener('change', () => changes++);
   await pause(); assert.equal(t.input.value, 'B7XVK9'); assert.equal(changes, 1); assert.equal(t.submits(), 0);
+  assert.equal(t.w.document.querySelector('form').children.length, 3, 'autofill adds no visible controls');
   await pause(); assert.equal(t.calls.length, 1);
   t.image.dispatchEvent(new t.w.Event('load')); await pause();
   assert.equal(t.calls.length, 2); assert.equal(changes, 2);
@@ -67,7 +68,7 @@ test('refreshed images invalidate old results and disabled or Google-only challe
 test('uncertain predictions and model failure retain manual entry', async () => {
   for (const response of [async () => ({ ok: false }), async () => { throw Error('Worker failed'); }]) {
     const t = setup({ response }); await pause(); assert.equal(t.input.value, '');
-    assert.match(t.w.document.querySelector('[data-vtop-captcha]').shadowRoot.querySelector('small').textContent, /Please type/);
+    assert.equal(t.w.document.querySelector('form').children.length, 3, 'no status or checkbox UI added');
     t.dom.window.close();
   }
 });
