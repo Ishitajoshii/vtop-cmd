@@ -13,7 +13,7 @@ function setup(html,settings={},fetch,session){
  w.chrome={storage:{local:{get:async()=>({defaultSemester:null,...settings}),set:async v=>writes.push(JSON.parse(JSON.stringify(v)))},onChanged:{addListener(){}},
   ...(session?{session:{get:async()=>JSON.parse(JSON.stringify(session.data)),set:async v=>{Object.assign(session.data,JSON.parse(JSON.stringify(v)));session.writes.push(JSON.parse(JSON.stringify(v)));}}}:{})}};
  if(fetch)w.fetch=fetch;
- for(const file of ['brand.js','combobox.js','navigation.js','semesters.js','enhancements.js','content.js','page-enhancements.js','enhancements-ui.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+ for(const file of ['brand.js','combobox.js','navigation.js','semesters.js','enhancements.js','content.js','page-enhancements.js'])w.eval(fs.readFileSync(root+file,'utf8'));
  return{dom,w,writes,shadow:w.document.querySelector('#vtop-command-root').shadowRoot};
 }
 const pause=()=>new Promise(r=>setTimeout(r,200));
@@ -52,31 +52,6 @@ test('semester chip is visible and attendance calculates per table row without s
  assert.equal(row.querySelector('input'),null);assert.match(row.textContent,/Target: 75%/);
  assert.equal(shadow.querySelector('.tools-launcher'),null);assert.equal(shadow.querySelector('.tools-dialog'),null);
  assert.equal(writes.length,0);dom.window.close();
-});
-test('filters persist only supported dropdowns and restore per page/semester with native handlers',async()=>{
- const html=`<main id="b5-pagewrapper"><h1>Marks</h1><form id="marks-form">${semester}${course}<input id="password" value="secret"><select id="paymentMethod"><option>Cash</option></select></form></main>`;
- const first=setup(html);await pause();
- let select=first.w.document.querySelector('#courseId');select.value='C2';select.dispatchEvent(new first.w.Event('change',{bubbles:true}));
- const settings=first.writes.at(-1);assert.equal(Object.values(settings.pageFilters)[0],'C2');assert.ok(!JSON.stringify(settings).includes('secret'));
- const second=setup(html,settings);let changes=0;second.w.document.querySelector('#courseId').addEventListener('change',()=>changes++);await pause();
- assert.equal(second.w.document.querySelector('#courseId').value,'C2');assert.equal(changes,1);
- // DOM churn must not repeatedly invoke the query handler.
- second.w.document.body.append(second.w.document.createElement('p'));await pause();assert.equal(changes,1);
- const different=setup(html.replace('value="S1"','value="S2"'),settings);await pause();assert.equal(different.w.document.querySelector('#courseId').value,'');
- const unavailable=setup(html.replace('value="C2"','value="C3"'),settings);await pause();assert.equal(unavailable.w.document.querySelector('#courseId').value,'');
- const transactional=setup(html.replace('Marks','Course Registration'),settings);await pause();assert.equal(transactional.w.document.querySelector('#courseId').value,'');
- for(const item of [first,second,different,unavailable,transactional])item.dom.window.close();
-});
-test('filter memory is turned off and cleared from the command menu',async()=>{
- const {dom,w,shadow,writes}=setup(`<main id="b5-pagewrapper"><h1>Marks</h1>${course}</main>`);await pause();
- const run=text=>{w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true,cancelable:true}));
-  const input=shadow.querySelector('.search input');input.value=text;input.dispatchEvent(new w.Event('input'));
-  const label=shadow.querySelector('[role=option] .label').textContent;input.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));return label;};
- assert.equal(run('filter memory'),'Turn off filter memory');assert.equal(shadow.querySelector('dialog').open,false);
- const select=w.document.querySelector('#courseId');select.value='C1';select.dispatchEvent(new w.Event('change',{bubbles:true}));
- assert.equal(writes.length,1);assert.equal(writes[0].rememberFilters,false);
- assert.equal(run('filter memory'),'Turn on filter memory');
- assert.equal(run('forget saved'),'Forget saved page filters');assert.deepEqual(writes.at(-1).pageFilters,{});dom.window.close();
 });
 const dashboardHTML=(rows)=>`<table class="customTable"><tbody><tr class="fixedContent tableHeader"><td>Semester</td><td>Course Code</td><td>Course Title</td></tr><tr class="fixedContent tableContent"><td>Fall Semester 2026-27</td><td>X</td><td>Y</td></tr></tbody></table>
 <table class="customTable"><tbody><tr class="fixedContent tableHeader"><td rowspan="2">Sl.No.</td><td rowspan="2">Title</td><td rowspan="2">Max. Mark</td><td rowspan="2">Weightage %</td><td rowspan="2">Due Date</td><td rowspan="2">QP</td><td colspan="3">Document Details</td></tr>
@@ -164,8 +139,8 @@ test('attendance annotations update in place after count changes and AJAX row re
  rows[1].cells[1].textContent='30';await pause();assert.match(rows[1].querySelector('.vtop-row-attendance').shadowRoot.textContent,/Can miss 0/);assert.equal(w.document.querySelectorAll('.vtop-row-attendance').length,2);
  rows[1].outerHTML='<tr><td>C</td><td>28</td><td>40</td><td>70%</td></tr>';await pause();assert.equal(w.document.querySelectorAll('.vtop-row-attendance').length,2);assert.match(rows[1].querySelector('.vtop-row-attendance').shadowRoot.textContent,/Attend 8 more/);dom.window.close();
 });
-test('scope toggles never switch to a different remembered course',async()=>{
- const {dom,w}=setup(registeredCourses,{defaultSemester:defaultFall,pageFilters:{'["Course Page - view","","courseId"]':'W1','["Course Page - view","all","courseId"]':'W1'}});await pause();
+test('scope toggles keep the course you picked',async()=>{
+ const {dom,w}=setup(registeredCourses,{defaultSemester:defaultFall});await pause();
  const select=w.document.querySelector('#courseId'),bar=w.document.querySelector('.vtop-course-scope').shadowRoot;
  select.value='F1';select.dispatchEvent(new w.Event('change',{bubbles:true}));
  bar.querySelector('.all').click();await pause();assert.equal(select.value,'F1','All semesters keeps the course you picked');

@@ -42,7 +42,7 @@ Press **⌘K** on macOS or **Ctrl+K** on Windows/Linux on any VTOP page. You can
 - **Search every page:** type a page name, a category or a common alias, such as `DA`, `CGPA`, `timetable`, `attendance` or `marks`. Use ↑/↓ and Enter, or click a result.
 - **Always current:** the menu reads VTOP's own menu each time it opens, including collapsed sections, so new pages show up on their own. Repeated names, such as regular and arrear exam schedules, are labelled by their section.
 - **Opens pages VTOP's way:** choosing a page clicks VTOP's own menu link, exactly as if you had clicked it.
-- **Commands:** **Home**, **Dark mode**, **Choose default semester**, **CGPA calculator**, and filter-memory settings are all in the menu.
+- **Commands:** **Home**, **Dark mode**, **Choose default semester** and **CGPA calculator** are all in the menu.
 - **Launcher:** the small pill shows the logo, your shortcut and your default semester. Click the semester to change it.
 - **Elsewhere:** the toolbar icon opens VTOP in a new tab when you're on another site.
 
@@ -120,10 +120,6 @@ Next time you open that form, your saved answers are filled in for you. **You st
 
 Every dropdown in the extension's own windows (the semester picker, the CGPA calculator and the preset editor) has a search box. The long dropdowns on Late Hour Request and Leave Request are searchable too. Type to filter, use ↑/↓ and Enter to pick, and Esc to close.
 
-### Remember filters
-
-On pages where you pick a course or exam to view a report, your last choice is remembered for each page and semester. It's then selected for you next time. Use **Turn off filter memory** or **Forget saved page filters** in the menu to stop or clear it.
-
 ### PDF viewer
 
 VTOP's PDF downloads, such as course materials and the curriculum, open in a built-in viewer instead of downloading straight away.
@@ -163,7 +159,6 @@ Only VIT decides how it treats browser extensions, so no one can honestly promis
 | --- | --- | --- |
 | You open a page from the command menu, or the CGPA calculator opens Grade History and Time Table | A click on VTOP's own menu link | Once per page you open; identical to clicking it yourself |
 | A page asks for a semester and you've saved a default | VTOP's own dropdown change, which loads that semester's view | Once per page view; skipped on registration, payment and similar pages |
-| A remembered course/exam filter is restored | VTOP's own dropdown change | Once per page view, only if you haven't changed it yourself |
 | The semester picker has no semester list yet | One Time Table request, as sent by VTOP's menu | At most once per page load, and the list is reused for a day |
 | **Pending** column on Digital Assignment Upload | Each course's dashboard request, as sent by VTOP's Dashboard button | One course at a time, never in parallel. Each result is reused for a random 1–5 hours. It stops as soon as you open a dashboard yourself. |
 | A preset is auto-filled, or you change a School, Venue Type, Block or Work field in the preset editor | VTOP's own lookup for that dropdown | Once per change, one at a time; never a submit |
@@ -185,7 +180,7 @@ Everything stays in your browser on this device.
 
 | Stored | Where | Kept until |
 | --- | --- | --- |
-| Theme, default semester, list of semester names (up to 30), filter-memory setting, remembered filters (up to 100) | `chrome.storage.local` | You change or clear them, or remove the extension |
+| Theme, default semester, list of semester names (up to 30) | `chrome.storage.local` | You change them, or remove the extension |
 | Form presets | `chrome.storage.local` | You delete the preset or remove the extension |
 | CGPA grade predictions | `chrome.storage.local`, per student | You change them or remove the extension |
 | Pending-assignment cache | `chrome.storage.session` (memory only) | 1–5 hours, an upload on that course, or closing the browser |
@@ -218,7 +213,7 @@ Tests use made-up data shaped like VTOP's real markup. No account data is includ
 | `semesters.js` | Semester dropdown discovery and matching; transactional-page guard |
 | `content.js` | Command menu, launcher, preferences and default-semester selection |
 | `dark.css`, `dark-readability.js` | Dark theme and contrast correction |
-| `enhancements.js`, `enhancements-ui.js` | Attendance and deadline maths, table readers, filter memory |
+| `enhancements.js` | Attendance and deadline maths, and VTOP table readers |
 | `page-enhancements.js` | Attendance rows, Pending column, marks totals, Course Page filter |
 | `cgpa.js`, `cgpa-ui.js` | Grade History and Time Table readers, CGPA maths and calculator |
 | `form-presets.js` | Form presets and their editor |

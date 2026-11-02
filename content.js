@@ -202,6 +202,8 @@
   }
   setTheme(false);
   try {
+    // Filter memory was removed; drop what it had saved.
+    chrome.storage.local.remove?.(['pageFilters', 'rememberFilters'])?.catch?.(() => {});
     chrome.storage.local.get(['darkMode', 'defaultSemester', 'knownSemesters']).then(settings => {
       setTheme(settings.darkMode === true); setSemesterPreference(settings.defaultSemester);
       if (Array.isArray(settings.knownSemesters?.list)) {
@@ -238,8 +240,7 @@
         host.dispatchEvent(new CustomEvent('vtop-cgpa-open', { detail: { defaultSemester } }));
       } },
       { id: 'vtop:semester', label: 'Choose default semester', category: defaultSemester?.label || 'Preferences', keywords: 'semester term default automatic', action: showSemesterSettings },
-      { id: 'vtop:theme', label: 'Toggle dark mode', category: 'Appearance', keywords: 'light theme night', action: toggleTheme },
-      ...(globalThis.VtopCommandExtras?.() || [])];
+      { id: 'vtop:theme', label: 'Toggle dark mode', category: 'Appearance', keywords: 'light theme night', action: toggleTheme }];
   }
   function updateSelection() {
     [...list.children].forEach((row, index) => row.setAttribute('aria-selected', String(index === selected)));

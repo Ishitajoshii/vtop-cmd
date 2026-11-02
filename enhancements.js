@@ -122,22 +122,7 @@
     }
     return courses;
   }
-  function pageRoot(doc) { return doc.querySelector('#b5-pagewrapper, #page-wrapper, #page-content') || doc.body; }
-  function filterKey(select, doc) {
-    if (select.disabled || select.multiple || /semester/i.test(`${select.id} ${select.name}`) ||
-      !/course|exam|assessment|class.?group|slot|faculty|component|view.?type|page.?length/i.test(`${select.id} ${select.name}`)) return null;
-    const container = pageRoot(doc); if (!container.contains(select)) return null;
-    const form = select.closest('form');
-    const heading = clean(container.querySelector('h1,h2,h3,h4,h5,h6,.card-header,.panel-title')?.textContent);
-    const page = form?.id || form?.getAttribute('name') || heading;
-    if (/registration|payment|refund|password|leave request|withdraw|enroll|application|apply|booking|mess|profile|bank|feedback|re-?exam/i.test(`${page} ${heading}`)) return null;
-    const field = select.id || select.name;
-    if (!page || !field) return null;
-    // The Course Page's Default/All scope is a view of the same list, not a different semester, so it isn't part of the key.
-    const semester = [...doc.querySelectorAll('select')].filter(s=>/semester/i.test(`${s.id} ${s.name}`)).map(s => s.value).filter(Boolean).join('|');
-    return JSON.stringify([page, semester, field]);
-  }
-  const api = { attendance, attendanceRows, parseDeadline, assignmentRows, dueSummary, countdown, dueState, assignmentCourses, filterKey };
+  const api = { attendance, attendanceRows, parseDeadline, assignmentRows, dueSummary, countdown, dueState, assignmentCourses };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.VtopEnhancements = api;
 })(globalThis);

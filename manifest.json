@@ -25,7 +25,6 @@
         "dark-readability.js",
         "cgpa-ui.js",
         "page-enhancements.js",
-        "enhancements-ui.js",
         "pdf-preview.js"
       ],
       "css": [

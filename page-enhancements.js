@@ -64,7 +64,7 @@
       count ? `${count} ${count===1?'course':'courses'} · ${preference.label}` : `No courses for ${preference.label}. Choose All semesters to browse other terms.`;
     const status=state.shadow.querySelector('p');if(status.textContent!==message)status.textContent=message;
     if(select.value!==currentValue){
-      const event=new Event('change',{bubbles:true});event.vtopCourseScopeChange=true;select.dispatchEvent(event);
+      select.dispatchEvent(new Event('change',{bubbles:true}));
     }
   }
   function scanCourses() {

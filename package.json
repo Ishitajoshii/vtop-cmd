@@ -5,7 +5,7 @@
   "description": "A local, DOM-driven command menu for VTOP",
   "scripts": {
     "test": "node --test",
-    "check": "node --check dark-readability.js && node --check brand.js && node --check combobox.js && node --check cgpa.js && node --check cgpa-ui.js && node --check content.js && node --check navigation.js && node --check semesters.js && node --check enhancements.js && node --check enhancements-ui.js && node --check pdf-bridge.js && node --check pdf-preview.js && node --check pdf-viewer.mjs && node --check page-enhancements.js && node --check page-actions.js && node --check page-runtime.js && node --check extension-action.js && node --check form-presets.js && node --check search-select.js",
+    "check": "node --check dark-readability.js && node --check brand.js && node --check combobox.js && node --check cgpa.js && node --check cgpa-ui.js && node --check content.js && node --check navigation.js && node --check semesters.js && node --check enhancements.js && node --check pdf-bridge.js && node --check pdf-preview.js && node --check pdf-viewer.mjs && node --check page-enhancements.js && node --check page-actions.js && node --check page-runtime.js && node --check extension-action.js && node --check form-presets.js && node --check search-select.js",
     "build": "python3 scripts/build.py"
   },
   "devDependencies": {
